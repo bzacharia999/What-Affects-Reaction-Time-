@@ -1,12 +1,12 @@
-# What Affects Reaction Time? 🧠⏱️
+# What Affects Reaction Time? 
 ### *A Repeated-Measures Factorial Design on Cognitive Performance*
 
 **Course Project — Stat 158**  
-**Authors:** Benjamin Sabu Zacharia, Isabel Sandoval, Aditya Mangalampalli  
+
 
 ---
 
-## 📌 Project Overview
+## Project Overview
 Reaction time (RT) is a fundamental measure of human cognitive and motor performance, representing how quickly we perceive, process, and respond to stimuli. Whether returning a tennis serve, dodging a hazard while driving, or making split-second decisions in competitive gaming, milliseconds matter. 
 
 This project investigates how **physiological** and **environmental** factors affect visual reaction time. By employing a rigorous **$2^3$ ($2 \times 2 \times 2$) repeated-measures factorial design** and **blocking on individual subjects**, we isolate the impact of short-term modifications from intrinsic baseline differences.
@@ -19,7 +19,7 @@ This project investigates how **physiological** and **environmental** factors af
 
 ---
 
-## 🛠️ Experimental Design
+## Experimental Design
 
 To investigate these questions, we designed a balanced factorial experiment with the following structure:
 
@@ -38,7 +38,7 @@ Reaction times vary widely across individuals due to genetics, age, and gaming e
 
 ---
 
-## 📊 Power Analysis & Sample Size Justification
+## Power Analysis & Sample Size Justification
 
 Before collecting our final data, we ran a preliminary "Dry Run" ($N = 24$) to estimate the natural variance of reaction times.
 
@@ -74,7 +74,7 @@ power_data <- map_dfr(n_values, function(current_n) {
 
 ---
 
-## 📋 Experimental Protocol
+## Experimental Protocol
 
 To ensure reliability and minimize noise across trials, subjects strictly adhered to the following standard operating protocol:
 
@@ -104,11 +104,11 @@ Look at the assigned treatment for the specific trial and adjust behaviors:
 ### Step 4: Measurement & Logging
 * Tap "Start" and click as soon as the screen turns green.
 * Record the result in milliseconds on the shared Google Sheet.
-* Export the final spreadsheet to `Stat 158 FP data.csv`.
+* Export the final spreadsheet for statistical analysis
 
 ---
 
-## 📊 Results & Statistical Analysis
+## Results & Statistical Analysis
 
 The gathered dataset was analyzed in R using a three-way Analysis of Variance (ANOVA).
 
@@ -140,7 +140,7 @@ Running `anova(lm(Reaction_time_.ms. ~ Person + Breathing * Time * Video, data =
 
 ### 3. Key Findings
 
-#### 🏷️ The Power of Blocking (Person Effect)
+#### The Power of Blocking (Person Effect)
 * **Result:** Highly significant ($p < 0.001$).
 * **Insight:** Individual subject variance accounted for **66.4%** of the total Sum of Squares ($39,669$ out of $59,671$). This confirms that blocking was highly effective; if we had not blocked by subject, this massive baseline variance would have flooded our residuals, making it impossible to detect any other effects.
 
@@ -149,21 +149,21 @@ Total SS = 59,671 ms² |██████████████████�
 Block SS = 39,669 ms² |██████████████       | (66.4% Explained by Blocking)
 ```
 
-#### 🌅 Circadian Rhythms (Time of Day Effect)
+#### Circadian Rhythms (Time of Day Effect)
 * **Result:** Marginally significant ($p = 0.067$ at a threshold of $\alpha = 0.10$).
 * **Insight:** Participants reacted roughly **10 ms faster in the evening** compared to the morning. This fits general circadian expectations, where physiological alertness rises throughout the day.
 
-#### 🫁 Breathing & 📺 Video Distraction
+#### Breathing & Video Distraction
 * **Result:** Statistically non-significant ($p > 0.10$).
 * **Insight:** Neither holding your breath nor playing a background video showed a statistically significant main effect on reaction times. The visual fluctuations observed in raw data were largely swallowed by residual noise.
 
-#### 🔀 Interactions
+#### Interactions
 * **Result:** No significant two-way or three-way interactions were detected.
 * **Insight:** Although the interaction plot between **Breathing & Video** showed visual divergence (indicating that the effect of breath-holding might differ when listening to a video), it did not pass the threshold for statistical significance ($p = 0.216$). The 3-way interaction was also highly non-significant ($p = 0.752$).
 
 ---
 
-## ⚠️ Limitations & Lessons Learned
+## Limitations & Lessons Learned
 
 While the block design successfully isolated individual variability, several factors introduced experimental noise:
 1. **Uncontrolled Testing Environments:** Subjects performed trials in different physical spaces, with varying ambient noise, table ergonomics, and room lighting.
@@ -173,7 +173,7 @@ While the block design successfully isolated individual variability, several fac
 
 ---
 
-## 🚀 How to Reproduce
+## How to Reproduce
 
 ### Prerequisites
 To compile the reports and run the analysis, you need [RStudio](https://posit.co/download/rstudio-desktop/) and the [Quarto CLI](https://quarto.org/docs/get-started/).
@@ -189,18 +189,17 @@ install.packages(c("tidyverse", "ggplot2", "knitr", "gtable"))
    git clone https://github.com/bzacharia999/What-Affects-Reaction-Time-.git
    cd What-Affects-Reaction-Time-
    ```
-2. Open `notebooks/FP_Results.qmd` or `notebooks/Project Protocol.qmd` in RStudio.
+2. Open `FP_Results.qmd` or `Project Protocol.qmd` in RStudio.
 3. Render the document using Quarto:
    ```bash
-   quarto render notebooks/FP_Results.qmd --to pdf
+   quarto render FP_Results.qmd --to pdf
    ```
    *This compiles the R analysis, executes the linear model and ANOVA, renders the plots, and outputs a formatted PDF report.*
 
 ---
 
-## 📂 Repository Contents
-* `notebooks/Project Protocol.qmd` / `Project-Protocol (2).pdf` — Pre-registration experimental protocol and power simulation script.
-* `notebooks/FP_Results.qmd` / `Final Report - FP_Results.pdf` — The final project report containing methodology, plots, ANOVA analysis, and raw data appendix.
-* `data/Stat 158 FP data.csv` — The collected experimental dataset ($N = 48$).
-* `data/dry_run.csv` — Preliminary data ($N = 24$) used to calculate residual variance ($\sigma^2$) for power analysis.
-* `benchmark.png` — Screenshot showing a sample reaction time trial result.
+## Repository Contents
+* `Project Protocol.qmd` / `Project-Protocol (2).pdf` — Pre-registration experimental protocol and power simulation script.
+* `FP_Results.qmd` / `Final Report - FP_Results.pdf` — The final project report containing methodology, plots, ANOVA analysis, and raw data appendix.
+
+
