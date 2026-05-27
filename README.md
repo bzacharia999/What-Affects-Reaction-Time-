@@ -1,8 +1,6 @@
 # What Affects Reaction Time? 
 ### *A Repeated-Measures Factorial Design on Cognitive Performance*
 
-**Course Project — Stat 158**  
-
 
 ---
 
