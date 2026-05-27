@@ -1,0 +1,434 @@
+---
+title: "Group 23 Project Protocol"
+author:
+  - name: Benjamin Sabu Zacharia
+  - name: Isabella Sandoval
+  - name: Aditya Mangalampalli
+format: pdf
+---
+
+```{r}
+library(tidyverse)
+```
+
+# Experimental Protocol
+
+## Description
+
+For this experiment we’ll test how three factors (breathing, background video distraction, and time of day) affect reaction time in milliseconds. To do this, we’ll use a repeated measures factorial design, blocking on the subjects. Each condition will have two levels; breathing (holding breath vs. breathing normally), distraction (playing a video in the background vs. omitting the video), and time of day (morning vs. evening). This results in a factorial design with eight unique combinations, with each of the 3 subjects going through all possible treatments multiple times. We expect a sample size of 48 observations to carry out this experiment.
+
+## Power Calculations and Results
+
+We have defined our sample size to be the number of observations in our dataframe (hence a sample size of 48 after power calculations). Our estimate of $\sigma^2$ is 405.5, and we achieved this estimate conducting a 2x2x2 ANOVA analysis on our dry run after blocking on subjects, then observing the Mean Squared Residuals. We have multiple alternative hypothesis' for each factor and interaction, which follow the pattern : "Factor/Interaction has an effect on reaction time in milliseconds, any observable difference is NOT due to chance alone". We have decided on these alternative hypothesis' as it aligns with the goals of this project, which is to study the factors that effect a persons reaction time. We have attached the code for our power curves and the figures themselves below, under appendix A. Based on these power curves, we have concluded that a sample size of 48 is sufficient for the purposes of attaining enough power $(0.7 <= 1 - \beta  <= 0.9)$ for our experiment. We can detect relatively small effect sizes (less than 10 milliseconds in differences) with the experiments current power.
+
+## Protocol
+
+The steps to conduct the experiment are listed below in below in order:
+
+-   Preparation
+
+    -   Environment: Sit in a room with consistent lighting and minimal background noise. Ensure you are at a table that allows for ergonomic use of your laptop.
+
+    -   Hardware Setup: Connect your laptop to a power source. Use a physical mouse if possible, rather than a trackpad, and stick to that choice for all trials
+
+    -   Software: Close all background applications and browser tabs except for the Human Benchmark Reaction Test.
+
+-   Randomization & Assignment
+
+    -   Use the provided R code to randomly assign treatments across each block.
+
+-   Execute the experiment
+
+    -   Look at your treatment assignments which consist of three factors (Breathing, Video, and Time of Day):
+
+        -   Breathing Factor:
+
+            -   Normal: Breathe naturally for the duration of the test.
+
+            -   Holding Breath: Take a deep breath and hold it immediately before clicking "Start." Maintain the hold until the final click of that specific trial is completed.
+
+        -   Video Factor:
+
+            -   No Video (Control): Perform the test in silence.
+
+            -   Video (Distraction): Play a specific, high-stimulus video.
+
+        -   Time of Day Factor:
+
+            -   Perform "Morning" trials within 3 hours of waking up.
+
+            -   Perform "Evening" trials after 6:00 PM but before 10:00 PM.
+
+-   Data Collection and Measurement
+
+    -   Once adjusted to treatment for a specific trial as described above, tap start and click again as soon as the screen turns green. Record your time in milliseconds on a Google Spreadsheet.
+
+    -   Repeat this step until you complete all of your treatments as listed in the randomly assigned dataframe
+
+    -   Convert the spreadsheet to csv
+
+-   ANOVA analysis and conclusion
+
+    -   Once you've finished gathering all of you're data, go to R studio and import your csv and assign it to 'dat'.
+
+    -   Run all the cells in the provided code.
+
+    -   Based on the results of the ANOVA, conclude your analysis by deciding the accept or reject the multiple null hypothesis posed by the ANOVA analysis.
+
+## Preregistration
+
+Once the data has been collected, we plan to run a 2x2x2 ANOVA on our data after blocking by the 3 subjects. Before this, we will set or significance threshold for all of our tests at 0.1. For each test: If the p-value for the main/interaction effect of the factor(s) is less than 0.05, then we will conclude that there is evidence that the factor(s) has an effect on response time in milliseconds.
+
+\newpage
+
+### Appendix 1: Dataframe of final assignments
+
+```{r}
+n <- 48
+
+# Create a balanced set of vectors to pass into data generating process
+i <- sample(rep(1:2, each = n/2)) # 12 ones, 12 twos, shuffled
+j <- sample(rep(1:2, each = n/2)) 
+k <- sample(rep(1:2, each = n/2)) 
+l <- sample(rep(1:3, each = n/3)) # 8 ones, 8 twos, 8 threes, shuffled
+
+dat <- data.frame(
+  breathing = factor(i),
+  time = factor(j),
+  video = factor(k),
+  person = factor(l))
+
+dat <- dat |>
+  mutate(
+    breathing = factor(breathing, 
+                       levels = c(1, 2), 
+                       labels = c("Normal", "Hold")),
+    time      = factor(time, 
+                       levels = c(1, 2), 
+                       labels = c("Morning", "Evening")),
+    video     = factor(video, 
+                       levels = c(1, 2), 
+                       labels = c("No", "Yes")),
+    person    = factor(person, 
+                       levels = c(1, 2, 3), 
+                       labels = c("Aditya", "Benjamin", "Isabel"))
+  )
+```
+
+```{r}
+print(dat)
+```
+
+\newpage
+
+### Appendix A: Anova Analysis (we used this to get our estimate of the variance; we also use this in our final analysis of experimental data)
+
+### ANOVA analysis
+
+```{r}
+dat <- read.csv('dry_run.csv')
+```
+
+```{r}
+head(dat)
+```
+
+```{r}
+fit<-lm(Reaction_time_.ms. ~Person + Breathing* Time* Video, data=dat)
+aov_tab<-anova(fit)
+aov_tab
+```
+
+Hence, we use 405.5 as our estimate of $\sigma^2$
+
+\newpage
+
+### Appendix B: Power and Power Curves
+
+#### Data Generating Process
+
+```{r}
+generate_Y <- function(mu,
+                       A, B, C, D,
+                       AB, AC, BC,
+                       ABC,
+                       sigma_sq,
+                       i, j, k, l) {
+  
+  n <- length(i)
+  
+  # irreducible error
+  epsilon <- rnorm(n, mean = 0, sd = sqrt(sigma_sq))
+  
+  # These make up the main effects for our model
+  main_effects <- mu + A[i] + B[j] + C[k] + D[l]
+  
+  # These are all the 2 way interactions for our model
+  AB_effect  <- AB[cbind(i, j)]
+  AC_effect  <- AC[cbind(i, k)]
+  BC_effect  <- BC[cbind(j, k)]
+  
+  # This is the 3 way interaction
+  ABC_effect <- ABC[cbind(i, j, k)]
+  
+  # full model
+  Y <- main_effects +
+       AB_effect + AC_effect + BC_effect +
+       ABC_effect +
+       epsilon
+  
+  return(Y)
+}
+```
+
+#### Paramaters for Data Generation (including main and interaction effects)
+
+```{r}
+mu <- 250
+
+A <- c(8.5, -8.5)      # Breathing 
+B <- c(8.7, -8.7)  # Time
+C <- c(8.3, -8.3)  # Video
+D <- c(-20, 10, 10)   # Person (Block)
+
+# 2-way interactions (2x2 matrices)
+
+AB <- matrix(c(10, -10,
+               -10, 10), nrow = 2)
+
+AC <- matrix(c(9, -9,
+               -9, 9), nrow = 2) 
+
+BC <- matrix(c(9.1, -9.1,
+               -9.1, 9.1), nrow = 2)  
+
+# 3-way interaction (2x2x2 array)
+
+ABC <- array(c(10, -10, -10, 10,   
+               -10, 10, 10, -10),
+             dim = c(2, 2, 2))
+```
+
+#### Function to simulate one dataframe
+
+```{r}
+one_sim <- function(mu, A, B, C, D, AB, AC, BC, ABC, 
+                    sigma_sq, n, target_effect) {
+  
+  # Create a balanced set of all treatment combinations
+  treatments <- expand.grid(
+    breathing = 1:2,
+    time = 1:2,
+    video = 1:2
+  )
+  full_design <- treatments[rep(1:nrow(treatments), length.out = n), ]
+  
+  # Shuffle the design so the 'Person' (block) is randomly assigned to these
+  shuffled_design <- full_design[sample(1:n), ]
+  
+  i_sim <- shuffled_design$breathing
+  j_sim <- shuffled_design$time
+  k_sim <- shuffled_design$video
+  l_sim <- sample(rep(1:3, each = n/3)) # Person block
+
+  Y <- generate_Y(mu, A, B, C, D, AB, AC, BC, ABC, sigma_sq, 
+                          i_sim, j_sim, k_sim, l_sim)
+
+  dat <- data.frame(
+    breathing = factor(i_sim),
+    time = factor(j_sim),
+    video = factor(k_sim),
+    person = factor(l_sim),
+    Y = Y
+  )
+  
+  fit <- lm(Y ~ person + breathing * time * video, data = dat)
+  
+  p_val <- anova(fit)[target_effect, "Pr(>F)"]
+  reject <- if(is.na(p_val)) 0 else as.integer(p_val < 0.05)
+  
+  return(reject)
+}
+```
+
+#### All Power Curves
+
+```{r}
+n_values <- seq(from = 24, by = 12, length.out = 10)
+factors_to_test <- c("breathing", "time", "video", "time:video", 
+                     "breathing:video", "breathing:time", 
+                     "breathing:time:video")
+iter <- 100 
+
+# Run simulations across n and factors
+power_data <- map_dfr(n_values, function(current_n) {
+  
+  # For each n, calculate power for each factor
+  map_dfr(factors_to_test, function(f) {
+    
+    rejections <- replicate(iter, one_sim(mu, A, B, C, D, AB, AC, 
+                                          BC, ABC, 405.5, current_n, f))
+    
+    data.frame(
+      n = current_n,
+      power = mean(rejections),
+      factor = f
+    )
+  })
+})
+```
+
+```{r}
+selected_factor <- "breathing"
+
+power_data |> 
+  filter(factor == selected_factor) |> 
+  ggplot(aes(x = n, y = power)) +
+  geom_line(color = "black", linewidth = 1) +
+  geom_point(color = "black", size = 2) +
+  geom_hline(yintercept = 0.8, linetype = "dashed", 
+             color = "red", alpha = 0.6) +
+  scale_y_continuous(limits = c(0, 1)) +
+  scale_x_continuous(breaks = n_values) +
+  labs(
+    title = paste("Power Curve:", selected_factor),
+    x = "Sample Size (n)",
+    y = "Estimated Power"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+selected_factor <- "time"
+
+power_data |> 
+  filter(factor == selected_factor) |> 
+  ggplot(aes(x = n, y = power)) +
+  geom_line(color = "black", linewidth = 1) +
+  geom_point(color = "black", size = 2) +
+  geom_hline(yintercept = 0.8, linetype = "dashed", 
+             color = "red", alpha = 0.6) +
+  scale_y_continuous(limits = c(0, 1)) +
+  scale_x_continuous(breaks = n_values) +
+  labs(
+    title = paste("Power Curve:", selected_factor),
+    x = "Sample Size (n)",
+    y = "Estimated Power"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+selected_factor <- "video"
+
+power_data |> 
+  filter(factor == selected_factor) |> 
+  ggplot(aes(x = n, y = power)) +
+  geom_line(color = "black", linewidth = 1) +
+  geom_point(color = "black", size = 2) +
+  geom_hline(yintercept = 0.8, linetype = "dashed", 
+             color = "red", alpha = 0.6) +
+  scale_y_continuous(limits = c(0, 1)) +
+  scale_x_continuous(breaks = n_values) +
+  labs(
+    title = paste("Power Curve:", selected_factor),
+    x = "Sample Size (n)",
+    y = "Estimated Power"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+selected_factor <- "time:video"
+
+power_data |> 
+  filter(factor == selected_factor) |> 
+  ggplot(aes(x = n, y = power)) +
+  geom_line(color = "black", linewidth = 1) +
+  geom_point(color = "black", size = 2) +
+  geom_hline(yintercept = 0.8, linetype = "dashed", 
+             color = "red", alpha = 0.6) +
+  scale_y_continuous(limits = c(0, 1)) +
+  scale_x_continuous(breaks = n_values) +
+  labs(
+    title = paste("Power Curve:", selected_factor),
+    x = "Sample Size (n)",
+    y = "Estimated Power"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+selected_factor <- "breathing:video"
+
+power_data |> 
+  filter(factor == selected_factor) |> 
+  ggplot(aes(x = n, y = power)) +
+  geom_line(color = "black", linewidth = 1) +
+  geom_point(color = "black", size = 2) +
+  geom_hline(yintercept = 0.8, linetype = "dashed", 
+             color = "red", alpha = 0.6) +
+  scale_y_continuous(limits = c(0, 1)) +
+  scale_x_continuous(breaks = n_values) +
+  labs(
+    title = paste("Power Curve:", selected_factor),
+    x = "Sample Size (n)",
+    y = "Estimated Power"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+selected_factor <- "breathing:time"
+
+power_data |> 
+  filter(factor == selected_factor) |> 
+  ggplot(aes(x = n, y = power)) +
+  geom_line(color = "black", linewidth = 1) +
+  geom_point(color = "black", size = 2) +
+  geom_hline(yintercept = 0.8, linetype = "dashed", 
+             color = "red", alpha = 0.6) +
+  scale_y_continuous(limits = c(0, 1)) +
+  scale_x_continuous(breaks = n_values) +
+  labs(
+    title = paste("Power Curve:", selected_factor),
+    x = "Sample Size (n)",
+    y = "Estimated Power"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+selected_factor <- "breathing:time:video"
+
+power_data |> 
+  filter(factor == selected_factor) |> 
+  ggplot(aes(x = n, y = power)) +
+  geom_line(color = "black", linewidth = 1) +
+  geom_point(color = "black", size = 2) +
+  geom_hline(yintercept = 0.8, linetype = "dashed", 
+             color = "red", alpha = 0.6) +
+  scale_y_continuous(limits = c(0, 1)) +
+  scale_x_continuous(breaks = n_values) +
+  labs(
+    title = paste("Power Curve:", selected_factor),
+    x = "Sample Size (n)",
+    y = "Estimated Power"
+  ) +
+  theme_minimal()
+```
+
+\newpage
+
+### Appendix 2: Dry Run
+
+We performed our Dry Run asynchronously, and we more or less followed the protocol exactly. One important change made was staying consistent in the hardware we used. We realized that conducting the test with a track pad often resulted in drastically higher reaction times as opposed to using a mouse.
+
+```{r}
+dry_run <- read.csv("dry_run.csv")
+dry_run
+```
+
+We use the human benchmark reaction time test. Attached below, is a sample run.
+
+![Sample test Results](benchmark.png)

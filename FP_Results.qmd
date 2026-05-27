@@ -1,0 +1,262 @@
+---
+title: "Final Report"
+author:
+  - name: Benjamin Sabu Zacharia
+  - name: Isabel Sandoval
+  - name: Aditya Mangalampalli
+format: pdf
+---
+
+## Introduction
+
+Reaction time is a fundamental measure of human cognitive and motor performance, reflecting how quickly an individual can perceive, process, and respond to a stimulus. It plays a critical role in many real-world contexts, from athletic performance: such as returning a serve in tennis or reacting to a defensive play in soccer, and even to competitive gaming environments, where milliseconds can determine success or failure. Because of its broad relevance, understanding the factors that influence reaction time is an important area of study.
+
+Prior research and common intuition suggest that reaction time may be affected by both physiological and environmental conditions. For example, controlled breathing may influence oxygen levels and focus, background distractions may divide attention, and time of day may reflect underlying circadian rhythms that affect alertness and cognitive performance. However, the magnitude and consistency of these effects, particularly in combination, are not always clear.
+
+By using a $2×2×2$ factorial design, this experiment enables us to evaluate not only the main effects of each factor but also potential interaction effects between them. For instance, distraction may have a stronger impact when a participant is fatigued in the evening, or breathing manipulation may interact with attention. Through this design, we aim to better understand how everyday, easily modifiable conditions influence reaction time and whether these effects are practically meaningful.
+
+## Methodology
+
+We used three different factors (breathing, background video distraction, and time of day) to analyze their effect on a person's reaction time in milliseconds. The reaction time was measured using the online Human Benchmark Reaction Time Test. We used a repeated measures factorial design, blocking on the three subjects. Each condition contained two levels; breathing (holding breath and breathing normally), distraction (playing a video in the background and omitting the video), and time of day (morning and evening). This resulted in a factorial design with eight unique combinations, with each of the 3 subjects going through all possible treatments multiple times.
+
+We initially planned to use a sample size of 24 tests, but revised it to 48 observations after running power calculations. Based on the power curves from our protocol, we found that 48 observations resulted in power (1-$\beta$) between 0.7 and 0.9.
+
+Our main reason behind this design was feasibility in the data collection process and efficiency. We wanted to assess these three factors while also reducing the subject-based variability by using the repeated-measures design, blocking by unit. This also allowed us to estimate the effect of each factor and their interactions. Our main source of randomization was shuffling both levels of each factor. We additionally shuffled each of the three subjects resulting in 16 random assignments for each subject.
+
+Depending on the trial, each subject was required to either breathe normally or hold their breath from the moment they clicked start to the final click, quantifying the reaction. If no video was assigned for a particular trial, the test was performed in relative silence. If video was assigned, the subjects used stimulating videos (i.e. loud and visually conspicuous). The time of day factor specified whether tests were conducted three hours within waking up (before noon) or during the evening (from 6:00 to 10:00 PM).
+
+Despite using a block design, possible shortcomings from this experiment include the lack of a fully controlled environment. All subjects conducted these tests in different locations, with different devices, and using different videos as their source of distraction. As subjects, picking our own video might have also affected our distraction level. In addition, we did not acknowledge the possible carry-over effect of conducting consecutive reaction tests within one level of time of day.
+
+The data (seen in appendix C, @tbl-experiments) was analyzed using the following linear model:
+
+$$
+y_{ijkl} = \mu + P_i + B_j + V_k + T_l + (BV)_{jk} + (BT)_{jl} + (VT)_{kl} + (BVT)_{jkl} + \epsilon_{ijkl}
+$$
+
+In particular, $y_{ijkl}$ is the response variable representing the reaction time for person $i$ under breathing condition $j$, video condition $k$, and time-of-day condition $l$. In this case, $\mu$ is the overall mean reaction time. The term $P_i$ represents the effect of person $i$. The terms $B_j$, $V_k$, and $T_l$ represent the main effects of breathing, video background, and time of day, respectively. The terms $(BV)_{jk}$, $(BT)_{jl}$, and $(VT)_{kl}$ represent two-way interaction effects, and $(BVT)_{jkl}$ represents the three-way interaction. The error term $\epsilon_{ijkl}$ represents random variation.
+
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(gtable)
+dat <- read.csv('Stat 158 FP data.csv')
+dat$Breathing <- factor(dat$Breathing, levels = c("Normal", "Hold"))
+dat$Time <- factor(dat$Time, levels = c("Morning", "Evening"))
+dat$Video <- factor(dat$Video, levels = c("No", "Yes"))
+```
+
+## Results
+
+A three-way Analysis of Variance (ANOVA) test was conducted to evaluate the effects of breathing techniques, time of day, and video stimuli on reaction speed. To increase the power of the test, "Person" was included as a blocking factor to account for individual variance in baseline performance.
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+#| label: tbl-anova
+#| tbl-cap: "2x2x2 ANOVA Results"
+
+library(knitr)
+
+# Re-running the model for the table output
+fit <- lm(Reaction_time_.ms. ~ Person + Breathing * Time * Video, data = dat)
+aov_tab <- anova(fit)
+
+# Outputting as a clean table
+kable(aov_tab, 
+      digits = 3, 
+      caption = "ANOVA Results for Reaction Time Analysis")
+```
+
+The analysis showed that the majority of the observed variation in the response was attributable to individual variance (what we're blocking on) as opposed to the experimental factors. The effect of the blocking variable was highly significant ($p < 0.001$), with a Sum of Squares of $39,669$. When compared against the Total Sum of Squares ($59,671$), it is evident that approximately 66% of all variance in the study was a result of measuring across three different subjects, as detailed in (@tbl-anova). This suggests that reaction speed was primarily driven by the unique baseline reaction time of each participant.
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+#| label: fig-main-effects
+#| fig-cap: "Main Effects of Experimental Factors on Reaction Time"
+plot.design(Reaction_time_.ms. ~ Breathing + Time + Video, data = dat)
+```
+
+Regarding the primary experimental factors, the only noteworthy trend observed was for Time ($p = 0.069$). As illustrated in the main effects plot (@fig-main-effects), reaction times fluctuated by approximately 10 milliseconds across conditions, with participants tending to perform slightly faster during evening sessions compared to morning sessions. While the visual differences for breathing techniques and video types appeared more pronounced in the plot, the high degree of inter-subject variability rendered these effects statistically negligible (all $p > 0.10$).
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#| label: fig-2way-interactions
+#| fig-cap: "Two-way Interaction Plots for Breathing, Time, and Video."
+#| fig-width: 12
+#| fig-height: 4
+
+facet_dat <- bind_rows(
+  dat %>% mutate(Interaction = "Breathing & Time",  X_Val = Time,  Group_Var = Breathing),
+  dat %>% mutate(Interaction = "Breathing & Video", X_Val = Video, Group_Var = Breathing),
+  dat %>% mutate(Interaction = "Time & Video",      X_Val = Time,  Group_Var = Video)
+)
+
+ggplot(facet_dat, aes(x = X_Val, y = Reaction_time_.ms., color = Group_Var, group = Group_Var)) +
+  stat_summary(fun = mean, geom = "line") +
+  stat_summary(fun = mean, geom = "point") +
+  facet_wrap(~Interaction, scales = "free_x") +
+  labs(title = "Two-way Interactions",
+       x = "Experimental Factor Level",
+       y = "Mean RT (ms)",
+       color = "Factor") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+The interactions between Time and Breathing, as well as Time and Video, appear negligible; the near-parallel slopes across factor levels indicate little to no interaction. In contrast, the interactions between Breathing and Video levels reveals a more pronounced difference. Examining the three potential two-way interaction plots (@fig-2way-interactions), we can see trends in average reaction time diverge as we compare across different levels video stimuli and breathing techniques. While this interaction did not reach the threshold for statistical significance in the ANOVA (@tbl-anova), the plot suggests the impact of breath-holding on reaction speed appears to shift depending on whether the subject is listening to a video.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#| label: fig-3way-interaction
+#| fig-cap: "Three-way Interaction Plot: Breathing x Time, faceted by Video type."
+#| echo: false
+#| fig-width: 12
+#| fig-height: 4
+
+
+ggplot(dat, aes(x = Time, y = Reaction_time_.ms., color = Breathing, group = Breathing)) +
+  stat_summary(fun = mean, geom = "line", size = 1) +
+  stat_summary(fun = mean, geom = "point", size = 3) +
+  facet_wrap(~Video) + 
+  labs(title = "Three-way Interaction Plot",
+       y = "Mean Reaction Time (ms)") +
+  theme_bw()
+```
+
+Finally, a three-way interaction plot was used to examine whether the combined effect of breathing technique and time of day was influenced by the presence of a video stimulus (@fig-3way-interaction). The interaction appear to diverge across the two video conditions. Despite these visual differences in the slopes, the ANOVA results confirm that this three-way interaction is not statistically significant ($p = 0.752$).
+
+## Conclusion
+
+By blocking on individual participants, we aimed to isolate the influence of these experimental factors while accounting for inherent differences in baseline reaction speed.
+
+The results indicate that individual differences were the dominant source of variation, accounting for approximately 66% of the total variability in reaction time. This finding reinforces the importance of blocking by person and highlights that reaction time is largely driven by intrinsic, subject-specific factors rather than short-term experimental manipulations.
+
+Among the experimental factors, time of day showed the most notable (though not statistically significant) effect, with participants tending to exhibit slightly faster reaction times in the evening compared to the morning. This trend is consistent with general expectations about circadian rhythms and alertness, although the evidence was not strong enough to draw definitive conclusions at the chosen significance level. In contrast, breathing condition and background video distraction did not demonstrate statistically significant main effects on reaction time.
+
+Similarly, while some interaction patterns, particularly between breathing and video, ended up appearing in the visualizations, none of the interaction effects were statistically significant. This suggests that any combined influence of these factors is either weak or obscured by variability in the data.
+
+Several limitations likely contributed to the lack of statistically significant findings. The relatively small sample size, combined with high inter-subject variability, reduced the power to detect subtle effects. Additionally, uncontrolled environmental differences (such as device type, testing location, and choice of video stimulus) and potential carryover effects between trials may have introduced additional noise into the data.
+
+In conclusion, this experiment suggests that short-term manipulations such as holding one’s breath or introducing background distractions may have minimal impact on reaction time compared to stable individual differences. While time of day may play a modest role, further research with a larger and more controlled sample would be needed to confirm this effect. Future studies could improve upon this design by increasing sample size, standardizing testing conditions, and incorporating more controlled manipulations of attention and physiological state.
+
+## Appendix
+
+### Appendix A: Use of AI
+
+OpenAI's ChatGPT (GPT-5.5) was used in the preparation of this report for assistance with document formatting and organization in Quarto/R Markdown. Google's Gemini 3 was also used to assist with plotting.
+
+### Appendix B: Protocol Modifications
+
+The only modification made to the original experimental protocol was an increase in the planned sample size from 24 observations to 48 observations after conducting power calculations.
+
+### Appendix C: Lab Notes and Raw Data
+
+This appendix contains the original raw observations recorded during experimentation in the order the trials were conducted.
+
+```{r, echo=FALSE}
+#| label: tbl-experiments
+#| tbl-cap: "Raw Experimental Data"
+raw_data <- read.csv("Stat 158 FP data.csv")
+knitr::kable(raw_data)
+```
+
+We didn't add any comments to our data and our data was collected relatively asynchronously. This means that each author completed the tests at different times throughout the day and different days.
+
+### Appendix D: R Code
+
+###############
+# Reading in and formatting data
+###############
+
+```{r eval=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(knitr)
+
+dat <- read.csv("Stat 158 FP data.csv")
+
+dat$Breathing <- factor(dat$Breathing,
+                        levels = c("Normal", "Hold"))
+
+dat$Time <- factor(dat$Time,
+                   levels = c("Morning", "Evening"))
+
+dat$Video <- factor(dat$Video,
+                    levels = c("No", "Yes"))
+```
+
+###############
+# ANOVA Analysis
+###############
+
+```{r eval=FALSE}
+fit <- lm(Reaction_time_.ms. ~ Person +
+            Breathing * Time * Video,
+          data = dat)
+
+anova(fit)
+```
+
+###############
+# Main Effects Plot (Figure 1)
+###############
+
+```{r eval=FALSE}
+plot.design(Reaction_time_.ms. ~
+              Breathing + Time + Video,
+            data = dat)
+```
+
+###############
+# Two-Way Interaction Plots (Figure 2)
+###############
+
+```{r eval=FALSE}
+facet_dat <- bind_rows(
+  dat %>% mutate(
+    Interaction = "Breathing & Time",
+    X_Val = Time,
+    Group_Var = Breathing
+  ),
+  dat %>% mutate(
+    Interaction = "Breathing & Video",
+    X_Val = Video,
+    Group_Var = Breathing
+  ),
+  dat %>% mutate(
+    Interaction = "Time & Video",
+    X_Val = Time,
+    Group_Var = Video
+  )
+)
+
+ggplot(facet_dat,
+       aes(x = X_Val,
+           y = Reaction_time_.ms.,
+           color = Group_Var,
+           group = Group_Var)) +
+  stat_summary(fun = mean, geom = "line") +
+  stat_summary(fun = mean, geom = "point") +
+  facet_wrap(~Interaction, scales = "free_x") +
+  labs(title = "Two-way Interactions",
+       x = "Experimental Factor Level",
+       y = "Mean RT (ms)",
+       color = "Factor") +
+  theme_minimal()
+```
+
+###############
+# Three-Way Interaction Plot (Figure 3)
+###############
+
+```{r eval=FALSE}
+ggplot(dat,
+       aes(x = Time,
+           y = Reaction_time_.ms.,
+           color = Breathing,
+           group = Breathing)) +
+  stat_summary(fun = mean, geom = "line") +
+  stat_summary(fun = mean, geom = "point") +
+  facet_wrap(~Video) +
+  labs(title = "Three-way Interaction Plot",
+       y = "Mean Reaction Time (ms)") +
+  theme_bw()
+```
+
+
