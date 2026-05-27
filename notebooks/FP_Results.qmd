@@ -40,7 +40,7 @@ In particular, $y_{ijkl}$ is the response variable representing the reaction tim
 library(tidyverse)
 library(ggplot2)
 library(gtable)
-dat <- read.csv('Stat 158 FP data.csv')
+dat <- read.csv('../data/Stat 158 FP data.csv')
 dat$Breathing <- factor(dat$Breathing, levels = c("Normal", "Hold"))
 dat$Time <- factor(dat$Time, levels = c("Morning", "Evening"))
 dat$Video <- factor(dat$Video, levels = c("No", "Yes"))
@@ -152,7 +152,7 @@ This appendix contains the original raw observations recorded during experimenta
 ```{r, echo=FALSE}
 #| label: tbl-experiments
 #| tbl-cap: "Raw Experimental Data"
-raw_data <- read.csv("Stat 158 FP data.csv")
+raw_data <- read.csv("../data/Stat 158 FP data.csv")
 knitr::kable(raw_data)
 ```
 
@@ -169,7 +169,7 @@ library(tidyverse)
 library(ggplot2)
 library(knitr)
 
-dat <- read.csv("Stat 158 FP data.csv")
+dat <- read.csv("../data/Stat 158 FP data.csv")
 
 dat$Breathing <- factor(dat$Breathing,
                         levels = c("Normal", "Hold"))

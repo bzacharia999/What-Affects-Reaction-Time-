@@ -126,7 +126,7 @@ print(dat)
 ### ANOVA analysis
 
 ```{r}
-dat <- read.csv('dry_run.csv')
+dat <- read.csv('../data/dry_run.csv')
 ```
 
 ```{r}
@@ -425,7 +425,7 @@ power_data |>
 We performed our Dry Run asynchronously, and we more or less followed the protocol exactly. One important change made was staying consistent in the hardware we used. We realized that conducting the test with a track pad often resulted in drastically higher reaction times as opposed to using a mouse.
 
 ```{r}
-dry_run <- read.csv("dry_run.csv")
+dry_run <- read.csv("../data/dry_run.csv")
 dry_run
 ```
 
